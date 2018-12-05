@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="action_sort_popularity">Sort By Most Popular</string>
+    <string name="action_sort_rating">Sort By Ratings</string>
+    <string name="general_error_message">An unknown error has occurred</string>
+    <string name="movie_poster_ph">Movie poster</string>
+    <string name="movie_detail">Movie Detail</string>
+    <string name="release_date">Release date:</string>
+    <string name="rating">Rating:</string>
+    <string name="synopsis">Synopsis:</string>
+    <string name="no_data">No data</string>
+    <string name="detail_poster">Detail poster</string>
+    <string name="rating_base_10">/10</string>
+    <string name="network_connection_error">A network connection error has occurred. Please check your connection</string>
+</resources>
