@@ -3,6 +3,7 @@ package com.example.alanvan.popularmovies;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -57,5 +58,10 @@ public class MovieDetail extends AppCompatActivity {
                     .error(R.mipmap.ic_movie_placeholder)
                     .into(mPosterIv);
         }
+    }
+
+    public void markFavorite(View view) {
+        //TODO: implement this
+        throw new RuntimeException("Not implemented yet");
     }
 }

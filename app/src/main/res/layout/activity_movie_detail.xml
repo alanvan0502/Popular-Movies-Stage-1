@@ -42,6 +42,12 @@
                 android:layout_height="wrap_content"
                 android:text="@string/no_data"/>
             <TextView
+                android:id="@+id/movie_duration_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                android:text="@string/no_data"/>
+            <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/rating"
@@ -51,6 +57,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/no_data"/>
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mark_as_favorite_button_text"
+                android:textColor="@android:color/white"
+                android:onClick="markFavorite"
+                android:background="@color/colorLight"/>
         </LinearLayout>
     </LinearLayout>
     <TextView

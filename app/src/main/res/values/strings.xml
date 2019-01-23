@@ -12,4 +12,5 @@
     <string name="detail_poster">Detail poster</string>
     <string name="rating_base_10">/10</string>
     <string name="network_connection_error">A network connection error has occurred. Please check your connection</string>
+    <string name="mark_as_favorite_button_text">mark as favorite</string>
 </resources>
