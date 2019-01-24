@@ -36,9 +36,13 @@ public final class NetworkUtils {
 
     private static final String BASE_URL = "https://api.themoviedb.org/3/discover/movie";
 
+    private static final String BASE_URL_DETAIL = "https://api.themoviedb.org/3/movie";
+
     private static final String API_PARAM = "api_key";
     private static final String SORT_PARAM = "sort_by";
     private static final String PAGE_PARAM = "page";
+
+    private static final String VIDEOS = "videos";
 
     /**
      * This method builds the url from provided parameters
@@ -63,6 +67,36 @@ public final class NetworkUtils {
 
         Log.v(TAG, "Built URI: " + url);
 
+        return url;
+    }
+
+    public static URL buildDurationRequestlUrl(int movieId) {
+        Uri builtUri = Uri.parse(BASE_URL_DETAIL).buildUpon()
+                .appendPath(String.valueOf(movieId))
+                .appendQueryParameter(API_PARAM, API_KEY)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+    //https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key=<<api_key>>&language=en-US
+    public static URL buildVideoKeysRequestUrl(int movieId) {
+        Uri builtUri = Uri.parse(BASE_URL_DETAIL).buildUpon()
+                .appendPath(String.valueOf(movieId))
+                .appendPath("videos")
+                .appendQueryParameter(API_PARAM, API_KEY)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         return url;
     }
 
@@ -91,4 +125,6 @@ public final class NetworkUtils {
             urlConnection.disconnect();
         }
     }
+
+
 }

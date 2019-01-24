@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -74,7 +73,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onClick(Movie movie) {
         Context context = this;
-        Intent intent = new Intent(context, MovieDetail.class);
+        Intent intent = new Intent(context, MovieDetailActivity.class);
         intent.putExtra(Movie.MOVIE_INFO, movie);
         startActivity(intent);
     }

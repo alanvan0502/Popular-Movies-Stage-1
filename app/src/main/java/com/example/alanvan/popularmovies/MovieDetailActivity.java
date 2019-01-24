@@ -3,20 +3,26 @@ package com.example.alanvan.popularmovies;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.alanvan.popularmovies.model.Movie;
 import com.example.alanvan.popularmovies.utilities.JsonUtils;
 import com.squareup.picasso.Picasso;
 
-public class MovieDetail extends AppCompatActivity {
+public class MovieDetailActivity extends AppCompatActivity {
 
     private ImageView mPosterIv;
     private TextView mReleaseDateTv;
     private TextView mRatingTv;
     private TextView mSynopsisTv;
+    private TextView mDurationTv;
+    private LinearLayout mDetailLayout;
+    private ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +34,9 @@ public class MovieDetail extends AppCompatActivity {
         mReleaseDateTv = findViewById(R.id.release_date_tv);
         mRatingTv = findViewById(R.id.rating_tv);
         mSynopsisTv = findViewById(R.id.synopsis_tv);
+        mDurationTv = findViewById(R.id.movie_duration_tv);
+        mDetailLayout = findViewById(R.id.movie_detail_layout);
+        mProgressBar = findViewById(R.id.pb_loading_indicator_detail);
 
         Intent intent = getIntent();
         Movie movie = null;
@@ -36,6 +45,8 @@ public class MovieDetail extends AppCompatActivity {
         }
 
         if (movie != null) {
+            Log.d("MOVIE_ID", "" + movie.getId());
+            new FetchMovieDetailDataTask(movie.getId(), mDurationTv, mDetailLayout, mProgressBar).execute();
 
             if (!movie.getTitle().equals("")) {
                 mTitleTv.setText(movie.getTitle());
