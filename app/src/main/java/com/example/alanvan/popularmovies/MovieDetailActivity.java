@@ -47,6 +47,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
     private TrailerAdapter mTrailerAdapter;
     private RecyclerView mRecyclerView;
     private ImageView mFavorite;
+    private Button mFavoriteButton;
 
     private FavRepository mRepository;
     private Movie mMovie;
@@ -64,6 +65,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
         mDurationTv = findViewById(R.id.movie_duration_tv);
         mDetailLayout = findViewById(R.id.movie_detail_layout);
         mProgressBar = findViewById(R.id.pb_loading_indicator_detail);
+        mFavoriteButton = findViewById(R.id.mark_favorite);
 
         mRecyclerView = findViewById(R.id.recycler_view_trailers);
         RecyclerView.LayoutManager layoutManager =
@@ -121,6 +123,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
                     for (FavEntry entry: favEntries) {
                         if (entry.getMovieId() == mMovie.getId()) {
                             mFavorite.setVisibility(View.VISIBLE);
+                            mFavoriteButton.setText(getString(R.string.unmark_favorite));
                         }
                     }
             }
@@ -128,8 +131,6 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
     }
 
     public void markFavorite(final View view) {
-
-        final Button button = view.findViewById(R.id.mark_favorite);
         if (mMovie != null) {
             if (mFavorite.getVisibility() == View.INVISIBLE) {
                 final FavEntry entry = new FavEntry(mMovie.getId());
@@ -140,7 +141,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                button.setText(getString(R.string.unmark_favorite));
+                                mFavoriteButton.setText(getString(R.string.unmark_favorite));
                             }
                         });
                     }
@@ -154,7 +155,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
                             @Override
                             public void run() {
                                 mFavorite.setVisibility(View.INVISIBLE);
-                                button.setText(getString(R.string.mark_as_favorite_button_text));
+                                mFavoriteButton.setText(getString(R.string.mark_as_favorite_button_text));
                             }
                         });
                     }
