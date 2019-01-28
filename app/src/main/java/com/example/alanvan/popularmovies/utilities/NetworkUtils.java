@@ -84,7 +84,7 @@ public final class NetworkUtils {
 
         return url;
     }
-    //https://api.themoviedb.org/3/movie/{movie_id}/videos?api_key=<<api_key>>&language=en-US
+
     public static URL buildVideoKeysRequestUrl(int movieId) {
         Uri builtUri = Uri.parse(BASE_URL_DETAIL).buildUpon()
                 .appendPath(String.valueOf(movieId))
@@ -99,6 +99,7 @@ public final class NetworkUtils {
         }
         return url;
     }
+
 
     /**
      * This method returns the entire result from the HTTP response.

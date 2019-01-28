@@ -1,20 +1,41 @@
 package com.example.alanvan.popularmovies;
 
+import android.arch.lifecycle.Lifecycle;
+import android.arch.lifecycle.LifecycleOwner;
+import android.arch.lifecycle.LifecycleRegistry;
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.alanvan.popularmovies.favorite_data.FavRepository;
+import com.example.alanvan.popularmovies.favorite_data.database.FavEntry;
 import com.example.alanvan.popularmovies.model.Movie;
+import com.example.alanvan.popularmovies.utilities.InjectorUtils;
 import com.example.alanvan.popularmovies.utilities.JsonUtils;
 import com.squareup.picasso.Picasso;
 
-public class MovieDetailActivity extends AppCompatActivity {
+import java.util.List;
+
+public class MovieDetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerOnClickHandler {
+
+    private static final String YOUTUBE_BASE_URL = "https://www.youtube.com/watch?v=";
 
     private ImageView mPosterIv;
     private TextView mReleaseDateTv;
@@ -23,6 +44,12 @@ public class MovieDetailActivity extends AppCompatActivity {
     private TextView mDurationTv;
     private LinearLayout mDetailLayout;
     private ProgressBar mProgressBar;
+    private TrailerAdapter mTrailerAdapter;
+    private RecyclerView mRecyclerView;
+    private ImageView mFavorite;
+
+    private FavRepository mRepository;
+    private Movie mMovie;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,41 +65,124 @@ public class MovieDetailActivity extends AppCompatActivity {
         mDetailLayout = findViewById(R.id.movie_detail_layout);
         mProgressBar = findViewById(R.id.pb_loading_indicator_detail);
 
+        mRecyclerView = findViewById(R.id.recycler_view_trailers);
+        RecyclerView.LayoutManager layoutManager =
+                new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setHasFixedSize(true);
+        mTrailerAdapter = new TrailerAdapter(this, this);
+        mRecyclerView.setAdapter(mTrailerAdapter);
+
         Intent intent = getIntent();
-        Movie movie = null;
+
         if (intent.hasExtra(Movie.MOVIE_INFO)) {
-            movie = intent.getParcelableExtra(Movie.MOVIE_INFO);
+            mMovie = intent.getParcelableExtra(Movie.MOVIE_INFO);
         }
 
-        if (movie != null) {
-            Log.d("MOVIE_ID", "" + movie.getId());
-            new FetchMovieDetailDataTask(movie.getId(), mDurationTv, mDetailLayout, mProgressBar).execute();
+        if (mMovie != null) {
+            Log.d("MOVIE_ID", "" + mMovie.getId());
+            new FetchMovieDetailDataTask(mMovie.getId(),
+                    mDurationTv, mDetailLayout, mProgressBar, mTrailerAdapter).execute();
 
-            if (!movie.getTitle().equals("")) {
-                mTitleTv.setText(movie.getTitle());
+            if (!mMovie.getTitle().equals("")) {
+                mTitleTv.setText(mMovie.getTitle());
             }
-            if (!movie.getReleaseDate().equals("")) {
-                mReleaseDateTv.setText(movie.getReleaseDate());
+            if (!mMovie.getReleaseDate().equals("")) {
+                mReleaseDateTv.setText(mMovie.getReleaseDate());
             }
-            if (!movie.getOverview().equals("")) {
-                mSynopsisTv.setText(movie.getOverview());
+            if (!mMovie.getOverview().equals("")) {
+                mSynopsisTv.setText(mMovie.getOverview());
             }
-            if (movie.getVoteAverage() != -1) {
-                String rating = Double.toString(movie.getVoteAverage());
+            if (mMovie.getVoteAverage() != -1) {
+                String rating = Double.toString(mMovie.getVoteAverage());
                 mRatingTv.setText(rating);
                 mRatingTv.append(getString(R.string.rating_base_10));
             }
 
             Picasso.with(this)
-                    .load(movie.getPosterPath())
+                    .load(mMovie.getPosterPath())
                     .placeholder(R.mipmap.ic_movie_placeholder)
                     .error(R.mipmap.ic_movie_placeholder)
                     .into(mPosterIv);
         }
+
+        mFavorite = findViewById(R.id.favorite);
+        mRepository = InjectorUtils.provideRepository(this);
+
+        setupViewModel();
     }
 
-    public void markFavorite(View view) {
+    private void setupViewModel() {
+        FavoriteViewModel viewModel
+                = ViewModelProviders.of(this).get(FavoriteViewModel.class);
+        viewModel.getAllFavoriteEntries().observe(this, new Observer<List<FavEntry>>() {
+            @Override
+            public void onChanged(@Nullable List<FavEntry> favEntries) {
+                if (favEntries != null)
+                    for (FavEntry entry: favEntries) {
+                        if (entry.getMovieId() == mMovie.getId()) {
+                            mFavorite.setVisibility(View.VISIBLE);
+                        }
+                    }
+            }
+        });
+    }
+
+    public void markFavorite(final View view) {
         //TODO: implement this
-        throw new RuntimeException("Not implemented yet");
+        final Button button = view.findViewById(R.id.mark_favorite);
+
+        if (mMovie != null) {
+            if (mFavorite.getVisibility() == View.INVISIBLE) {
+                final FavEntry entry = new FavEntry(mMovie.getId());
+                AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRepository.insertFavEntry(entry);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                button.setText(getString(R.string.unmark_favorite));
+                            }
+                        });
+                    }
+                });
+            } else {
+                AppExecutors.getInstance().diskIO().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        mRepository.deleteFavEntry(mMovie.getId());
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mFavorite.setVisibility(View.INVISIBLE);
+                                button.setText(getString(R.string.mark_as_favorite_button_text));
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    }
+
+    @Override
+    public void onClick(String trailerId) {
+        openYouTube(trailerId);
+    }
+
+    public void openYouTube(String trailerId) {
+        // Get the URL text.
+        String url = YOUTUBE_BASE_URL + trailerId;
+
+        // Parse the URI and create the intent.
+        Uri webpage = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+
+        // Find an activity to hand the intent and start that activity.
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d("ImplicitIntents", "Can't handle this!");
+        }
     }
 }

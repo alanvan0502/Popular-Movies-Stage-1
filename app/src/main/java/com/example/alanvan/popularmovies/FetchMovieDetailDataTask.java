@@ -20,14 +20,17 @@ public class FetchMovieDetailDataTask extends AsyncTask<Void, Void, MovieDetail>
     private WeakReference<TextView> mDurationTv;
     private WeakReference<ProgressBar> mProgressBar;
     private WeakReference<LinearLayout> mDetailLayout;
+    private WeakReference<TrailerAdapter> mTrailerAdapter;
 
     private int movieId;
 
     FetchMovieDetailDataTask
-            (int movieId, TextView durationTv, LinearLayout detailLayout, ProgressBar progressBar) {
+            (int movieId, TextView durationTv, LinearLayout detailLayout,
+             ProgressBar progressBar, TrailerAdapter trailerAdapter) {
         mDurationTv = new WeakReference<>(durationTv);
         mProgressBar = new WeakReference<>(progressBar);
         mDetailLayout = new WeakReference<>(detailLayout);
+        mTrailerAdapter = new WeakReference<>(trailerAdapter);
         this.movieId = movieId;
     }
 
@@ -66,6 +69,7 @@ public class FetchMovieDetailDataTask extends AsyncTask<Void, Void, MovieDetail>
             }
             mProgressBar.get().setVisibility(View.INVISIBLE);
             mDetailLayout.get().setVisibility(View.VISIBLE);
+            mTrailerAdapter.get().setTrailerIdList(movieDetail.getVideoLink());
         }
     }
 }

@@ -13,4 +13,9 @@
     <string name="rating_base_10">/10</string>
     <string name="network_connection_error">A network connection error has occurred. Please check your connection</string>
     <string name="mark_as_favorite_button_text">mark as favorite</string>
+    <string name="trailers">Trailers:</string>
+    <string name="play_button">Play Button</string>
+    <string name="trailer_default_text">Trailer</string>
+    <string name="favorite_image">Favorite image</string>
+    <string name="unmark_favorite">Unmark as favorite</string>
 </resources>
