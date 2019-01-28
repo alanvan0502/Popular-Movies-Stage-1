@@ -80,7 +80,6 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
         }
 
         if (mMovie != null) {
-            Log.d("MOVIE_ID", "" + mMovie.getId());
             new FetchMovieDetailDataTask(mMovie.getId(),
                     mDurationTv, mDetailLayout, mProgressBar, mTrailerAdapter).execute();
 
@@ -129,9 +128,8 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
     }
 
     public void markFavorite(final View view) {
-        //TODO: implement this
-        final Button button = view.findViewById(R.id.mark_favorite);
 
+        final Button button = view.findViewById(R.id.mark_favorite);
         if (mMovie != null) {
             if (mFavorite.getVisibility() == View.INVISIBLE) {
                 final FavEntry entry = new FavEntry(mMovie.getId());

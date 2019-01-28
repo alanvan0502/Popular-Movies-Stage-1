@@ -79,7 +79,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
     public int getItemCount() {
         if (mMovieData == null) return 0;
         else {
-            Log.d("Movie data length", ""+mMovieData.size());
             return mMovieData.size();
         }
     }

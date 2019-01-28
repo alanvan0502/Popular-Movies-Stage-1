@@ -51,13 +51,9 @@ public class JsonUtils {
     public static Movie convertToMovieObject(String movieJsonString) {
         try {
             JSONObject movieJson = new JSONObject(movieJsonString);
-
             int id = movieJson.optInt(ID, -1);
-
             String title = movieJson.optString(TITLE, "");
-
             String tempPath = movieJson.optString(POSTER_PATH, "");
-
             String posterPath = "";
 
             if (!tempPath.equals("")) {
@@ -65,13 +61,8 @@ public class JsonUtils {
             }
 
             String overview = movieJson.optString(OVERVIEW, "");
-
             double voteAverage = movieJson.optDouble(VOTE_AVERAGE, -1);
-
             String releaseDate = movieJson.optString(RELEASE_DATE, "");
-
-
-            Log.d("MOVIEJSON", movieJson.toString());
 
             return new Movie(id, title, posterPath, overview, voteAverage, releaseDate);
 
@@ -100,7 +91,6 @@ public class JsonUtils {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject object = (JSONObject) jsonArray.get(i);
                 videoKeys.add(object.optString(KEY, ""));
-                Log.d("KEY", object.optString(KEY, ""));
             }
         } catch (JSONException e) {
             e.printStackTrace();
