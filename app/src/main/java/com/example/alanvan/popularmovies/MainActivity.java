@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -23,10 +24,12 @@ public class MainActivity extends AppCompatActivity
 
     public static final int NUM_PAGES = 3;
     private static final int NUM_COLUMNS = 2;
+    private static final String SORT = "SORT";
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessage;
+    private boolean isSortPopularity = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,10 +52,14 @@ public class MainActivity extends AppCompatActivity
 
         mRecyclerView.setAdapter(mMovieAdapter);
 
+        if (savedInstanceState != null) {
+            isSortPopularity = savedInstanceState.getBoolean(SORT);
+        }
+
         if (connectedToInternet(this)) {
             Log.d("INTERNET", "connected");
             new FetchMovieDataTask(mLoadingIndicator,
-                    mMovieAdapter, mRecyclerView, mErrorMessage).execute(true);
+                    mMovieAdapter, mRecyclerView, mErrorMessage).execute(isSortPopularity);
         } else {
             showConnectionErrorMessage();
         }
@@ -103,6 +110,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_sort_popularity) {
             mMovieAdapter.setMovieData(null);
             if (connectedToInternet(this)) {
+                isSortPopularity = true;
                 new FetchMovieDataTask(mLoadingIndicator,
                         mMovieAdapter, mRecyclerView, mErrorMessage).execute(true);
             } else
@@ -113,6 +121,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.action_sort_rating) {
             mMovieAdapter.setMovieData(null);
             if (connectedToInternet(this)) {
+                isSortPopularity = false;
                 new FetchMovieDataTask(mLoadingIndicator,
                         mMovieAdapter, mRecyclerView, mErrorMessage).execute(false);
             } else
@@ -127,5 +136,11 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setVisibility(View.INVISIBLE);
         mErrorMessage.setVisibility(View.VISIBLE);
         mErrorMessage.setText(getString(R.string.network_connection_error));
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(SORT, isSortPopularity);
     }
 }

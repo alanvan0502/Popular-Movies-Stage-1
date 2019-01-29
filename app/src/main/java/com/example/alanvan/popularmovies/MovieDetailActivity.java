@@ -1,19 +1,12 @@
 package com.example.alanvan.popularmovies;
 
-import android.arch.lifecycle.Lifecycle;
-import android.arch.lifecycle.LifecycleOwner;
-import android.arch.lifecycle.LifecycleRegistry;
-import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.Observer;
-import android.arch.lifecycle.ViewModelProvider;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
+import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -28,7 +21,6 @@ import com.example.alanvan.popularmovies.favorite_data.FavRepository;
 import com.example.alanvan.popularmovies.favorite_data.database.FavEntry;
 import com.example.alanvan.popularmovies.model.Movie;
 import com.example.alanvan.popularmovies.utilities.InjectorUtils;
-import com.example.alanvan.popularmovies.utilities.JsonUtils;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
