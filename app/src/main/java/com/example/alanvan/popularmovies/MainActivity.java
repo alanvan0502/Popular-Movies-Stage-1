@@ -1,10 +1,12 @@
 package com.example.alanvan.popularmovies;
 
+import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.PersistableBundle;
+import android.os.Parcelable;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -17,7 +19,14 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.example.alanvan.popularmovies.favorite_data.FavRepository;
+import com.example.alanvan.popularmovies.favorite_data.database.FavEntry;
 import com.example.alanvan.popularmovies.model.Movie;
+import com.example.alanvan.popularmovies.utilities.InjectorUtils;
+import com.example.alanvan.popularmovies.utilities.JsonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements MovieAdapter.MovieAdapterOnClickHandler {
@@ -25,11 +34,17 @@ public class MainActivity extends AppCompatActivity
     public static final int NUM_PAGES = 3;
     private static final int NUM_COLUMNS = 2;
     private static final String SORT = "SORT";
+    private static final String FAVORITE = "FAVORITE";
+    private static final String RECYCLER_STATE = "RECYCLER_STATE";
+
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessage;
     private boolean isSortPopularity = true;
+    private boolean isFavoriteFilter = false;
+    private FavRepository mFavRepository;
+    private Parcelable savedRecyclerState;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,25 +56,49 @@ public class MainActivity extends AppCompatActivity
 
         mRecyclerView = findViewById(R.id.recycler_view_movies);
 
-        GridLayoutManager layoutManager =
-                new GridLayoutManager(this, NUM_COLUMNS);
-
+        mMovieAdapter = new MovieAdapter(this, this);
+        mRecyclerView.setAdapter(mMovieAdapter);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, NUM_COLUMNS);
         mRecyclerView.setLayoutManager(layoutManager);
-
         mRecyclerView.setHasFixedSize(true);
 
-        mMovieAdapter = new MovieAdapter(this, this);
-
-        mRecyclerView.setAdapter(mMovieAdapter);
+        mFavRepository = InjectorUtils.provideRepository(this);
 
         if (savedInstanceState != null) {
-            isSortPopularity = savedInstanceState.getBoolean(SORT);
+            isFavoriteFilter = savedInstanceState.getBoolean(FAVORITE);
+            if (isFavoriteFilter) {
+                loadFavorites();
+            } else {
+                isSortPopularity = savedInstanceState.getBoolean(SORT);
+                loadFromInternet();
+            }
+            savedRecyclerState = savedInstanceState.getParcelable(RECYCLER_STATE);
+            if (mRecyclerView.getLayoutManager() != null)
+                mRecyclerView.getLayoutManager().onRestoreInstanceState(savedRecyclerState);
+        } else {
+            Intent intent = getIntent();
+            if (intent != null) {
+                isFavoriteFilter = intent.getBooleanExtra(FAVORITE, false);
+                isSortPopularity = intent.getBooleanExtra(SORT, true);
+            }
         }
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isFavoriteFilter) {
+            loadFavorites();
+        } else {
+            loadFromInternet();
+        }
+    }
+
+    private void loadFromInternet() {
         if (connectedToInternet(this)) {
             Log.d("INTERNET", "connected");
             new FetchMovieDataTask(mLoadingIndicator,
-                    mMovieAdapter, mRecyclerView, mErrorMessage).execute(isSortPopularity);
+                    mMovieAdapter, mRecyclerView, savedRecyclerState, mErrorMessage).execute(isSortPopularity);
         } else {
             showConnectionErrorMessage();
         }
@@ -111,8 +150,9 @@ public class MainActivity extends AppCompatActivity
             mMovieAdapter.setMovieData(null);
             if (connectedToInternet(this)) {
                 isSortPopularity = true;
+                isFavoriteFilter = false;
                 new FetchMovieDataTask(mLoadingIndicator,
-                        mMovieAdapter, mRecyclerView, mErrorMessage).execute(true);
+                        mMovieAdapter, mRecyclerView, savedRecyclerState, mErrorMessage).execute(true);
             } else
                 showConnectionErrorMessage();
             return true;
@@ -122,14 +162,44 @@ public class MainActivity extends AppCompatActivity
             mMovieAdapter.setMovieData(null);
             if (connectedToInternet(this)) {
                 isSortPopularity = false;
+                isFavoriteFilter = false;
                 new FetchMovieDataTask(mLoadingIndicator,
-                        mMovieAdapter, mRecyclerView, mErrorMessage).execute(false);
+                        mMovieAdapter, mRecyclerView, savedRecyclerState, mErrorMessage).execute(false);
             } else
                 showConnectionErrorMessage();
             return true;
         }
 
+        if (id == R.id.action_get_favorites) {
+            isFavoriteFilter = true;
+            loadFavorites();
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    private void loadFavorites() {
+        mFavRepository.getAllFavEntries().observe(this, new Observer<List<FavEntry>>() {
+            @Override
+            public void onChanged(@Nullable List<FavEntry> favEntries) {
+                if (favEntries != null) {
+                    ArrayList<String> movieData = convertToMovieData(favEntries);
+                    mMovieAdapter.setMovieData(movieData);
+                }
+            }
+        });
+    }
+
+    private ArrayList<String> convertToMovieData(List<FavEntry> favEntries) {
+        //TODO: Complete this!!!
+        ArrayList<String> result = new ArrayList<>();
+        for (FavEntry entry: favEntries) {
+            Movie movie = entry.getMovie();
+            String jsonString = JsonUtils.convertToJsonString(movie);
+            result.add(jsonString);
+        }
+        Log.d("RESULTS", result.toString());
+        return result;
     }
 
     private void showConnectionErrorMessage() {
@@ -142,5 +212,11 @@ public class MainActivity extends AppCompatActivity
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(SORT, isSortPopularity);
+        outState.putBoolean(FAVORITE, isFavoriteFilter);
+        if (mRecyclerView.getLayoutManager() != null)
+            outState.putParcelable(RECYCLER_STATE,
+                    mRecyclerView.getLayoutManager().onSaveInstanceState());
     }
+
+
 }

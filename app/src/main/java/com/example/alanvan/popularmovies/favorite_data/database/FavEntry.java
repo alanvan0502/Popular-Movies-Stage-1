@@ -5,7 +5,7 @@ import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
-import java.util.Objects;
+import com.example.alanvan.popularmovies.model.Movie;
 
 @Entity(tableName = "fav_table")
 public class FavEntry {
@@ -15,11 +15,19 @@ public class FavEntry {
     @ColumnInfo(name = "movieId")
     private int movieId;
 
-    public FavEntry(int movieId) {
+    @ColumnInfo(name = "movie")
+    private Movie movie;
+
+    public FavEntry(Movie movie, int movieId) {
+        this.movie = movie;
         this.movieId = movieId;
     }
 
     public int getMovieId() {
         return movieId;
+    }
+
+    public Movie getMovie() {
+        return movie;
     }
 }

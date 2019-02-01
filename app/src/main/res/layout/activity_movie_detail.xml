@@ -83,14 +83,12 @@
                 </LinearLayout>
             </LinearLayout>
             <TextView
-                android:paddingStart="8dp"
-                android:paddingRight="8dp"
-                android:paddingLeft="8dp"
-                android:paddingTop="8dp"
+                android:padding="8dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/synopsis"
                 android:textStyle="bold"/>
+
             <TextView
                 android:paddingStart="8dp"
                 android:paddingRight="8dp"
@@ -121,6 +119,27 @@
                 android:layout_height="wrap_content"
                 android:layout_width="match_parent"
                 android:padding="8dp"/>
+
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="2dp"
+                android:background="@color/horizontal_line_color"
+                android:layout_margin="8dp"/>
+
+            <TextView
+                android:id="@+id/review_section_title"
+                android:padding="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reviews"
+                android:textStyle="bold"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recycler_view_reviews"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:padding="8dp"/>
+
         </LinearLayout>
     </ScrollView>
 

@@ -16,7 +16,6 @@
 package com.example.alanvan.popularmovies.utilities;
 
 import android.net.Uri;
-import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,15 +33,13 @@ public final class NetworkUtils {
 
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
-    private static final String BASE_URL = "https://api.themoviedb.org/3/discover/movie";
-
-    private static final String BASE_URL_DETAIL = "https://api.themoviedb.org/3/movie";
+    private static final String BASE_URL = "https://api.themoviedb.org/3/movie";
 
     private static final String API_PARAM = "api_key";
-    private static final String SORT_PARAM = "sort_by";
     private static final String PAGE_PARAM = "page";
 
     private static final String VIDEOS = "videos";
+    private static final String REVIEWS = "reviews";
 
     /**
      * This method builds the url from provided parameters
@@ -50,11 +47,11 @@ public final class NetworkUtils {
      * @return the URL to query the movie database
      */
     public static URL buildUrl(boolean param, int page) {
-        String sortBy = "vote_average.desc";
-        if (param) sortBy = "popularity.desc";
+        String sortBy = "popular";
+        if (!param) sortBy = "top_rated";
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                .appendPath(sortBy)
                 .appendQueryParameter(API_PARAM, API_KEY)
-                .appendQueryParameter(SORT_PARAM, sortBy)
                 .appendQueryParameter(PAGE_PARAM, Integer.toString(page))
                 .build();
 
@@ -69,7 +66,7 @@ public final class NetworkUtils {
     }
 
     public static URL buildDurationRequestlUrl(int movieId) {
-        Uri builtUri = Uri.parse(BASE_URL_DETAIL).buildUpon()
+        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendPath(String.valueOf(movieId))
                 .appendQueryParameter(API_PARAM, API_KEY)
                 .build();
@@ -84,9 +81,24 @@ public final class NetworkUtils {
     }
 
     public static URL buildVideoKeysRequestUrl(int movieId) {
-        Uri builtUri = Uri.parse(BASE_URL_DETAIL).buildUpon()
+        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendPath(String.valueOf(movieId))
-                .appendPath("videos")
+                .appendPath(VIDEOS)
+                .appendQueryParameter(API_PARAM, API_KEY)
+                .build();
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    public static URL buildReviewRequestUrl(int movieId) {
+        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                .appendPath(String.valueOf(movieId))
+                .appendPath(REVIEWS)
                 .appendQueryParameter(API_PARAM, API_KEY)
                 .build();
         URL url = null;
@@ -124,6 +136,4 @@ public final class NetworkUtils {
             urlConnection.disconnect();
         }
     }
-
-
 }

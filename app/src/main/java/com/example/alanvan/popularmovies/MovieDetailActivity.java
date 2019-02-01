@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -37,7 +38,9 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
     private LinearLayout mDetailLayout;
     private ProgressBar mProgressBar;
     private TrailerAdapter mTrailerAdapter;
-    private RecyclerView mRecyclerView;
+    private RecyclerView mRecyclerViewTrailer;
+    private ReviewAdapter mReviewAdapter;
+    private RecyclerView mRecyclerViewReviews;
     private ImageView mFavorite;
     private Button mFavoriteButton;
 
@@ -59,13 +62,23 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
         mProgressBar = findViewById(R.id.pb_loading_indicator_detail);
         mFavoriteButton = findViewById(R.id.mark_favorite);
 
-        mRecyclerView = findViewById(R.id.recycler_view_trailers);
-        RecyclerView.LayoutManager layoutManager =
+        //Setup trailer recyclerview
+        mRecyclerViewTrailer = findViewById(R.id.recycler_view_trailers);
+        RecyclerView.LayoutManager layoutManagerTrailer =
                 new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setHasFixedSize(true);
+        mRecyclerViewTrailer.setLayoutManager(layoutManagerTrailer);
+        mRecyclerViewTrailer.setHasFixedSize(true);
         mTrailerAdapter = new TrailerAdapter(this, this);
-        mRecyclerView.setAdapter(mTrailerAdapter);
+        mRecyclerViewTrailer.setAdapter(mTrailerAdapter);
+
+        //Setup review recyclerview
+        mRecyclerViewReviews = findViewById(R.id.recycler_view_reviews);
+        RecyclerView.LayoutManager layoutManagerReview =
+                new LinearLayoutManager(this);
+        mRecyclerViewReviews.setLayoutManager(layoutManagerReview);
+        mRecyclerViewReviews.setHasFixedSize(true);
+        mReviewAdapter = new ReviewAdapter();
+        mRecyclerViewReviews.setAdapter(mReviewAdapter);
 
         Intent intent = getIntent();
 
@@ -75,7 +88,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
 
         if (mMovie != null) {
             new FetchMovieDetailDataTask(mMovie.getId(),
-                    mDurationTv, mDetailLayout, mProgressBar, mTrailerAdapter).execute();
+                    mDurationTv, mDetailLayout, mProgressBar, mTrailerAdapter, mReviewAdapter).execute();
 
             if (!mMovie.getTitle().equals("")) {
                 mTitleTv.setText(mMovie.getTitle());
@@ -105,6 +118,17 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
         setupViewModel();
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+
+        return(super.onOptionsItemSelected(item));
+    }
+
     private void setupViewModel() {
         FavoriteViewModel viewModel
                 = ViewModelProviders.of(this).get(FavoriteViewModel.class);
@@ -125,7 +149,7 @@ public class MovieDetailActivity extends AppCompatActivity implements TrailerAda
     public void markFavorite(final View view) {
         if (mMovie != null) {
             if (mFavorite.getVisibility() == View.INVISIBLE) {
-                final FavEntry entry = new FavEntry(mMovie.getId());
+                final FavEntry entry = new FavEntry(mMovie, mMovie.getId());
                 AppExecutors.getInstance().diskIO().execute(new Runnable() {
                     @Override
                     public void run() {

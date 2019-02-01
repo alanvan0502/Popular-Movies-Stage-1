@@ -1,8 +1,10 @@
 package com.example.alanvan.popularmovies.utilities;
 
+import android.util.JsonWriter;
 import android.util.Log;
 
 import com.example.alanvan.popularmovies.model.Movie;
+import com.example.alanvan.popularmovies.model.Review;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -72,6 +74,28 @@ public class JsonUtils {
         }
     }
 
+    public static String convertToJsonString(Movie movie) {
+        int id = movie.getId();
+        String title = movie.getTitle();
+        String posterPath = movie.getPosterPath();
+        posterPath = posterPath.replace(IMAGE_BASE_URL, "");
+        String overview = movie.getOverview();
+        double voteAverage = movie.getVoteAverage();
+        String releaseDate = movie.getReleaseDate();
+        JSONObject object = new JSONObject();
+        try {
+            object.put("id", id);
+            object.put("title", title);
+            object.put("poster_path", posterPath);
+            object.put("overview", overview);
+            object.put("vote_average", voteAverage);
+            object.put("release_date", releaseDate);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return object.toString();
+    }
+
     public static int getDuration(String jsonResponse) {
         int duration = 0;
         try {
@@ -96,5 +120,22 @@ public class JsonUtils {
             e.printStackTrace();
         }
         return videoKeys;
+    }
+
+    public static List<Review> getReviews(String reviewResponse) {
+        List<Review> reviews = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(reviewResponse);
+            JSONArray jsonArray = jsonObject.optJSONArray(RESULTS);
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject object = (JSONObject) jsonArray.get(i);
+                String reviewAuthor = object.optString("author", "");
+                String reviewText = object.optString("content", "");
+                reviews.add(new Review(reviewText, reviewAuthor));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return reviews;
     }
 }

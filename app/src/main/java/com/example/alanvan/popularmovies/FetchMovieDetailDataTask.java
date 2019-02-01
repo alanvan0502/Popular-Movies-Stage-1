@@ -7,6 +7,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.alanvan.popularmovies.model.MovieDetail;
+import com.example.alanvan.popularmovies.model.Review;
 import com.example.alanvan.popularmovies.utilities.JsonUtils;
 import com.example.alanvan.popularmovies.utilities.NetworkUtils;
 
@@ -21,16 +22,18 @@ public class FetchMovieDetailDataTask extends AsyncTask<Void, Void, MovieDetail>
     private WeakReference<ProgressBar> mProgressBar;
     private WeakReference<LinearLayout> mDetailLayout;
     private WeakReference<TrailerAdapter> mTrailerAdapter;
+    private WeakReference<ReviewAdapter> mReviewAdapter;
 
     private int movieId;
 
     FetchMovieDetailDataTask
             (int movieId, TextView durationTv, LinearLayout detailLayout,
-             ProgressBar progressBar, TrailerAdapter trailerAdapter) {
+             ProgressBar progressBar, TrailerAdapter trailerAdapter, ReviewAdapter reviewAdapter) {
         mDurationTv = new WeakReference<>(durationTv);
         mProgressBar = new WeakReference<>(progressBar);
         mDetailLayout = new WeakReference<>(detailLayout);
         mTrailerAdapter = new WeakReference<>(trailerAdapter);
+        mReviewAdapter = new WeakReference<>(reviewAdapter);
         this.movieId = movieId;
     }
 
@@ -52,7 +55,11 @@ public class FetchMovieDetailDataTask extends AsyncTask<Void, Void, MovieDetail>
             String videoLinkResponse = NetworkUtils.getResponseFromHttpUrl(videoKeysRequestUrl);
             List<String> videoKeys = JsonUtils.getVideoKeys(videoLinkResponse);
 
-            movieDetail = new MovieDetail(duration, videoKeys);
+            URL reviewRequestUrl = NetworkUtils.buildReviewRequestUrl(movieId);
+            String reviewResponse = NetworkUtils.getResponseFromHttpUrl(reviewRequestUrl);
+            List<Review> reviews = JsonUtils.getReviews(reviewResponse);
+
+            movieDetail = new MovieDetail(duration, videoKeys, reviews);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -70,6 +77,7 @@ public class FetchMovieDetailDataTask extends AsyncTask<Void, Void, MovieDetail>
             mProgressBar.get().setVisibility(View.INVISIBLE);
             mDetailLayout.get().setVisibility(View.VISIBLE);
             mTrailerAdapter.get().setTrailerIdList(movieDetail.getVideoLink());
+            mReviewAdapter.get().setReviewList(movieDetail.getReviews());
         }
     }
 }

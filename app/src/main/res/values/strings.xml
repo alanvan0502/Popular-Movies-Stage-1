@@ -18,4 +18,6 @@
     <string name="trailer_default_text">Trailer</string>
     <string name="favorite_image">Favorite image</string>
     <string name="unmark_favorite">Unmark as favorite</string>
+    <string name="filter_favorites">Filter Favorites</string>
+    <string name="reviews">Reviews</string>
 </resources>

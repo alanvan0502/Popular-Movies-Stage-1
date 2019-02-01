@@ -1,7 +1,9 @@
 package com.example.alanvan.popularmovies;
 
 import android.os.AsyncTask;
+import android.os.Parcelable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -26,17 +28,18 @@ public class FetchMovieDataTask extends AsyncTask<Boolean, Void, ArrayList<Strin
     private WeakReference<MovieAdapter> mMovieAdapter;
     private WeakReference<RecyclerView> mRecyclerView;
     private WeakReference<TextView> mErrorMessage;
-
+    private Parcelable savedRecyclerState;
 
     // Constructor, provides references to the views in MainActivity
     FetchMovieDataTask(ProgressBar loadingIndicator,
                        MovieAdapter movieAdapter,
                        RecyclerView recyclerView,
-                       TextView errorMessage) {
+                       Parcelable savedRecyclerState, TextView errorMessage) {
         this.mLoadingIndicator = new WeakReference<>(loadingIndicator);
         this.mMovieAdapter = new WeakReference<>(movieAdapter);
         this.mRecyclerView = new WeakReference<>(recyclerView);
         this.mErrorMessage = new WeakReference<>(errorMessage);
+        this.savedRecyclerState = savedRecyclerState;
     }
 
     @Override
@@ -66,13 +69,17 @@ public class FetchMovieDataTask extends AsyncTask<Boolean, Void, ArrayList<Strin
 
     @Override
     protected void onPostExecute(ArrayList<String> movieData) {
-        mLoadingIndicator.get().setVisibility(View.INVISIBLE);
         if (!movieData.isEmpty()) {
             showMovieDataView();
             mMovieAdapter.get().setMovieData(movieData);
+            if (savedRecyclerState != null) {
+                mRecyclerView.get().getLayoutManager().onRestoreInstanceState(savedRecyclerState);
+            }
+            Log.d("MOVIE DATA", movieData.toString());
         } else {
             showErrorMessage();
         }
+        mLoadingIndicator.get().setVisibility(View.INVISIBLE);
     }
 
     /**
